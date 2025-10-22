@@ -3,21 +3,52 @@ library(bslib)
 
 ui <- page_sidebar(
   title = "Confidence Interval Calculator for Proportions",
+  # Add MathJax support with proper configuration
+  tags$head(
+    tags$script(type = "text/javascript", async = NA, 
+                src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"),
+    tags$script(HTML("
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+          displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
+          processEscapes: true
+        },
+        startup: {
+          ready: () => {
+            MathJax.startup.defaultReady();
+            MathJax.startup.promise.then(() => {
+              // Re-render math when Shiny updates
+              $(document).on('shiny:value', function(event) {
+                MathJax.typesetPromise();
+              });
+            });
+          }
+        }
+      };
+    "))
+  ),
   sidebar = sidebar(
-    numericInput(
-      "sample_prop",
-      "Sample Proportion (p̂):",
-      value = 0.5,
-      min = 0,
-      max = 1,
-      step = 0.01
+    div(
+      HTML('<label class="control-label" for="sample_prop">Sample Proportion (\\(\\hat{p}\\)):</label>'),
+      numericInput(
+        "sample_prop",
+        label = NULL,
+        value = 0.5,
+        min = 0,
+        max = 1,
+        step = 0.01
+      )
     ),
-    numericInput(
-      "sample_size",
-      "Sample Size (n):",
-      value = 100,
-      min = 1,
-      step = 1
+    div(
+      HTML('<label class="control-label" for="sample_size">Sample Size (\\(n\\)):</label>'),
+      numericInput(
+        "sample_size",
+        label = NULL,
+        value = 100,
+        min = 1,
+        step = 1
+      )
     ),
     numericInput(
       "confidence_level",
@@ -44,7 +75,12 @@ ui <- page_sidebar(
   )
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  # Re-render MathJax when the app loads
+  observe({
+    session$sendCustomMessage("mathjax", "")
+  })
   
   # Calculate standard error
   standard_error <- reactive({
@@ -102,4 +138,7 @@ server <- function(input, output) {
   })
 }
 
-shinyApp(ui = ui, server = server) 
+# Add custom message handler for MathJax
+addResourcePath("js", system.file("www", package = "shiny"))
+
+shinyApp(ui = ui, server = server)
