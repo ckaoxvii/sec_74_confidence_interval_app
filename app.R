@@ -1,5 +1,6 @@
 library(shiny)
 library(bslib)
+library(shinyWidgets)
 
 ui <- page_sidebar(
   title = "Confidence Interval Calculator for Proportions",
