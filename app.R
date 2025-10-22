@@ -135,7 +135,7 @@ server <- function(input, output, session) {
     conf_level <- input$confidence_level
     ci <- confidence_interval()
     paste0("We are ", conf_level, "% confident that the true population proportion ",
-           "lies between ", round(ci[1], 4), " and ", round(ci[2], 4), ".")
+           "lies between ", round(ci[1], 4)*100, "%", " and ", round(ci[2], 4)*100, "%", ".")
   })
 }
 
